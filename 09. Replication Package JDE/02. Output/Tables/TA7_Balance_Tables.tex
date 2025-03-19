@@ -1,0 +1,38 @@
+
+%%% Table created in Stata by command iebaltab
+%%% (https://github.com/worldbank/ietoolkit)
+%%% (https://dimewiki.worldbank.org/iebaltab)
+%%% The command was specified exactly like this: 
+%%% iebaltab ethiopia urban age male educ_primary married hhsize [aw=w] if exp_refugee==0, grpvar(treat_var) savetex("/users/u0131185/ownCloud/ETH_UGA Experiment/04. Experimental Approach FAFO/06. DataWork//02. Output//baltab_demographics_HOSTS.tex") replace rowvarlabels tblnonote format(%9.2fc) stats("pair(diff)") starlevels(0.1 0.05 0.01)
+
+\begin{tabular}{@{\extracolsep{5pt}}lcccccccccc}
+	\\[-1.8ex]\hline \hline \\[-1.8ex]
+	& \multicolumn{1}{c}{(T1)}  & \multicolumn{1}{c}{(T2)}  & \multicolumn{1}{c}{(T3)}  & \multicolumn{1}{c}{(T4)}  & \multicolumn{1}{c}{(T1)-(T2)} & \multicolumn{1}{c}{(T1)-(T3)} & \multicolumn{1}{c}{(T1)-(T4)} & \multicolumn{1}{c}{(T2)-(T3)} & \multicolumn{1}{c}{(T2)-(T4)} & \multicolumn{1}{c}{(T3)-(T4)}  \\
+	Variable & Mean & Mean & Mean & Mean & Diff. & Diff. & Diff. & Diff. & Diff. & Diff. \\ 
+	\midrule \midrule  \multicolumn{11}{c}{\textbf{Panel A: Pooled Sample}} \\  \midrule 
+Country is Ethiopia      & 0.39      & 0.43      & 0.39    & 0.42       & -0.05    & -0.00      & -0.03     & 0.05     & 0.02      & -0.03   \\
+Urban      & 0.58       & 0.63       & 0.63        & 0.61       & -0.05    & -0.04*       & -0.03     & 0.01       & 0.02     & 0.02   \\
+Age    & 33.60     & 32.95     & 32.90     & 32.85     & 0.65      & 0.70     & 0.75       & 0.05   & 0.10       & 0.05   \\
+Male     & 0.47      & 0.46      & 0.45      & 0.48     & 0.02     & 0.02     & -0.01    & 0.00       & -0.02      & -0.03   \\
+At least primary     & 0.61      & 0.61        & 0.62   & 0.59   & 0.01    & -0.00   & 0.03   & -0.01      & 0.02   & 0.03   \\
+Household Size  & 5.16      & 5.09   & 5.09     & 5.16     & 0.07    & 0.07    & -0.00   & -0.00   & -0.08    & -0.07   \\
+Employed   & 0.77     & 0.75   & 0.79    & 0.78    & 0.01   & -0.02   & -0.01    & -0.03   & -0.03     & 0.01   \\
+	\midrule \midrule  \multicolumn{11}{c}{\textbf{Panel B: Hosts}} \\  \midrule 
+Country is Ethiopia    & 0.46   & 0.49      & 0.46    & 0.47      & -0.04    & -0.01  & -0.01    & 0.03    & 0.02    & -0.01   \\
+Urban    & 0.69      & 0.73   & 0.73   & 0.73  & -0.05*    & -0.05*   & -0.04   & 0.00     & 0.00    & 0.00   \\
+Age     & 34.27 & 32.67   & 33.30   & 34.29     & 1.60**    & 0.97     & -0.01      & -0.63   & -1.62***     & -0.99   \\
+Male    & 0.50    & 0.46     & 0.42       & 0.46    & 0.04      & 0.09***   & 0.05  & 0.04     & 0.01  & -0.04   \\
+At least primary   & 0.63   & 0.66    & 0.65   & 0.61     & -0.02  & -0.02    & 0.02     & 0.00     & 0.05      & 0.04   \\
+Household Size   & 4.94  & 4.85     & 4.71    & 4.90   & 0.10      & 0.24  & 0.05    & 0.14     & -0.05     & -0.19   \\
+Employed   & 0.86    & 0.85     & 0.86 & 0.86     & 0.01    & 0.01     & 0.00    & -0.01     & -0.01      & -0.01   \\	\midrule \midrule  \multicolumn{11}{c}{\textbf{Panel C: Refugees}} \\  \midrule 
+Country is Ethiopia  & 0.26       & 0.35    & 0.26    & 0.34    & -0.10     & -0.00   & -0.08    & 0.10   & 0.01     & -0.08   \\
+Urban     & 0.40  & 0.49      & 0.44   & 0.43     & -0.09     & -0.04 & -0.03     & 0.05  & 0.06    & 0.01   \\
+Age   & 32.39     & 33.34   & 32.20    & 30.72   & -0.95   & 0.19    & 1.66**     & 1.14    & 2.62  & 1.48   \\
+Male    & 0.42     & 0.45    & 0.51    & 0.52    & -0.03    & -0.09*    & -0.10*     & -0.06 & -0.07      & -0.01   \\
+At least primary     & 0.57 & 0.54        & 0.55    & 0.55    & 0.04    & 0.02    & 0.03     & -0.01     & -0.01      & 0.00   \\
+Household Size    & 5.54     & 5.42    & 5.75   & 5.56     & 0.12    & -0.20    & -0.01   & -0.33      & -0.14      & 0.19   \\
+Employed    & 0.59      & 0.62    & 0.66    & 0.66      & -0.03     & -0.08    & -0.07     & -0.04      & -0.04   & 0.00   \\
+	\hline \hline \\[-1.8ex]
+\end{tabular}
+
+

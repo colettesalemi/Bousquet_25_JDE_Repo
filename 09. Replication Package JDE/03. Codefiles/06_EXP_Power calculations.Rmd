@@ -1,0 +1,418 @@
+---
+title: "Power calculations for Experiment"
+author: "Colette Salemi and Mark Marvin Kadigo"
+date: "2023-10-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+##Overview
+
+This script uses code provided by JPAL to perform retrospective power calculations. Based on sample sizes and other parameters (p-value, power, etc.), the code determines minimum detectible size.
+
+Throughout the code focuses on the power of the coefficient of interest, sameOcc*outGroup. Additional power calculations can be run for other coefficients, such as the coefficient for sameOcc, but then the variable of interest (the interaction) should be included as a covariate. 
+
+## Data prep
+
+This is the made-up data Colette used to build the code. Mark, please delete the fake data production chunk immediately below and open the survey data instead. Make sure the survey data is called df.
+
+```{r}
+
+#Make sure dplyr is installed
+#install.packages("dplyr")   #Mark making sure.
+library(dplyr)
+
+#num_rows = 3000
+
+#df <- data.frame(
+#  id = 1:num_rows,
+#  exp_outgroup = sample(0:1, num_rows, replace = TRUE),  
+#  exp_same_occup = sample(0:1, num_rows, replace = TRUE),
+#  refugee = sample(0:1, num_rows, replace = TRUE),
+#  primary = sample(0:1, num_rows, replace = TRUE),
+#  male = sample(0:1, num_rows, replace = TRUE),
+#  ethiopia = sample(0:1, num_rows, replace=TRUE),
+#  urban = sample(0:1, num_rows, replace=TRUE),
+#  contact = sample(0:1, num_rows, replace=TRUE),
+#  hhsize = sample(1:7, num_rows, replace=TRUE),
+#  educ_primary = sample(0:1, num_rows, replace=TRUE),
+#  employed = sample(0:1, num_rows, replace=TRUE),
+#  age = sample(15:64, num_rows, replace = TRUE)
+#)
+
+#Create outcome variables that are statistically different from each other.
+#df <- df %>%
+#  mutate(prej_aind_byR = case_when(
+#    exp_outgroup == 0 & exp_same_occup == 0 ~ rnorm(num_rows, mean #= 3, sd = 0.5),
+#    exp_outgroup == 1 & exp_same_occup == 0 ~ rnorm(num_rows, mean #= 15, sd = 0.5),
+#    exp_outgroup == 0 & exp_same_occup == 1 ~ rnorm(num_rows, mean #= 57, sd = 0.5),
+#    exp_outgroup == 1 & exp_same_occup == 1 ~ rnorm(num_rows, mean #= 103, sd = 0.5)
+#  ))
+
+#df$prej_aind_byL = df$prej_aind_byR
+
+#head(df)
+#colnames(df)
+
+```
+Create a treatment variable, an interaction between exp_same_occ and exp_outgroup
+
+```{r}
+
+#df$Treatment = df$exp_outgroup*df$exp_same_occ
+
+
+```
+
+##Setup
+
+This section opens libraries and defines parameters used throughout.
+
+First, libraries required to run the JPAL tools. pwrcalc needs to be installed from Github. Make sure all packages are installed first.
+```{r}
+#Only run these installations once, turn them "on" and "off" using a # character at the start of the line
+
+#install.packages("devtools")
+#devtools::install_github('vikjam/pwrcalc')  #Install this from github
+
+#install.packages("haven")
+#install.packages("ICC")
+#install.packages("randomizr")
+#install.packages("multiwayvcov")
+#install.packages("lmtest")
+#install.packages("magrittr")
+#install.packages("pwrcalc")
+#install.packages("Hmisc")
+#install.packages("gsubfn")
+#install.packages("writexl")
+#install.packages("readxl")  
+
+
+#Open package libraries
+library(devtools)
+library(haven)
+library(ICC)
+library(randomizr)
+library(multiwayvcov)
+library(lmtest)
+library(magrittr)
+library(pwrcalc)
+library(Hmisc)
+library(gsubfn)
+library(writexl)
+library(readxl)
+#library(xlsx)
+```
+Opening the actual data and name it df 
+
+```{r}
+# Detect system username dynamically
+detect_username <- function() {
+  if (Sys.info()["sysname"] == "Windows") {
+    return(Sys.getenv("USERNAME"))
+  } else {
+    return(Sys.getenv("USER"))
+  }
+}
+
+username <- detect_username()
+
+# Construct base path dynamically
+base_directory <- file.path("C:", "Users", username)
+
+data_subpath <- "ETH_UGA Experiment/04. Experimental Approach FAFO/09. Replication Package JDE/01. Datasets/03. Final/04_UGA_ETH_Prepared.dta"
+
+output_subpath <- "ETH_UGA Experiment/04. Experimental Approach FAFO/09. Replication Package JDE/02. Output/Tables"
+
+# Identify the correct cloud storage folder
+possible_folders <- c("ownCloud - julie.bousquet@kuleuven.be@owncloud.gwdg.de", "Dropbox")
+found_folder <- NULL
+
+for (folder in possible_folders) {
+  full_path <- file.path(base_directory, folder)
+  if (dir.exists(full_path)) {
+    found_folder <- full_path
+    break
+  }
+}
+
+if (!is.null(found_folder)) {
+  file_path <- file.path(found_folder, data_subpath)
+  output_folder <- file.path(found_folder, output_subpath)
+} else {
+  # Fall back to a simpler file path structure
+  file_path <- file.path(base_directory, "Documents", "data_file.dta")
+  output_folder <- file.path(base_directory, "Documents", "Tables")
+}
+
+# Ensure output directory exists
+if (!dir.exists(output_folder)) {
+  dir.create(output_folder, recursive = TRUE)
+}
+
+df <- read_dta(file_path)
+
+
+```
+Specifying the interaction treatment
+
+```{r}
+df$Treatment = df$exp_outgroup*df$exp_same_occup
+```
+
+Specify power level, significance level, ratio of treatment to control. The ratio is based on 1/4 of the sample being treatment and 3/4 nontreatment (1/3)
+
+```{r}
+power = 0.8       #SPECIFY - desired power
+nratio = 0.33     #SPECIFY - the ratio of the size of the treatment group to control group
+alpha =0.05       #SPECIFY - significance level
+p = nratio/(1+nratio)
+```
+
+Function to detect MDS with covariates in estimation. This comes directly from JPAL. The function determines MDS.
+
+```{r}
+
+mde_cov <- function (dataset, outcome, covariates, treatment, N){
+  t_power = qt(power, df=N-2)
+  t_alpha = qt(1-alpha/2, df=N-2)
+  
+  cov_list <- paste(covariates, collapse = " + ")
+  formula <- as.formula(paste("outcome ~ ",cov_list,sep = ""))
+  fit <- lm(formula, data = dataset)
+  summary(fit)
+  
+  res_baseline_sd <- sd(summary(fit)$residuals, na.rm=TRUE)
+  res_baseline_sd                                                               
+  
+  mde_res <- (t_power + t_alpha) * sqrt(1 /(p*(1-p))) * sqrt(1 / N) * res_baseline_sd
+  mde_res = round(mde_res, digits=2)
+  
+}
+
+```
+
+Dataframe to store results. I wrote the code so that it builds a dataframe that tells us which regression and which coefficient the power calculation is for.
+
+```{r}
+
+results <- data.frame(
+  Group = character(0),
+  Type = character(0),
+  Location = character(0),
+  Variable = character(0),
+  MDS = numeric(0)
+)
+```
+
+Specify additional variables and parameters consistent throughout
+```{r}
+
+#SPECIFY covariates in regression
+cov= c("exp_outgroup", "exp_same_occup", "ethiopia", "urban", "male", "age", "hhsize", "educ_primary", "employed") 
+
+#Data subsets
+hosts = df[which(df$refugee==0),] 
+refugees = df[which(df$refugee==1),]
+
+```
+
+## Main results 
+
+###Results for refugees
+
+Overall
+```{r}
+
+#Parameters to manually change for the results table
+group = "Refugees" #group is either host or refugee
+type  = "Main"  #type is either main regression or a particular heterogeneity analysis
+location = "All" #either all locations or specific locations
+variable = "Interaction" #Either the interaction term, outGroup, or sameOcc
+
+dataset = refugees                  #SPECIFY - the dataset
+outcome = dataset$prej_aind_byR     #SPECIFY - the outcome variable
+treatment = dataset$Treatment       #SPECIFY - treatment variable
+
+N = nrow(dataset) 
+
+#Execute the function
+mde_res <- mde_cov(dataset, outcome, cov, treatment, N)   
+
+#Store results in a table
+res = unlist(c(group, type, location, variable, mde_res))
+
+res_matrix <- matrix(res, nrow = 1, byrow = TRUE,
+                     dimnames = list(NULL, c("Group", "Type", "Location", "Variable", "MDS")))
+
+# Bind the matrix as a row to the empty dataframe
+results = rbind(results, as.data.frame(res_matrix))
+
+
+```
+
+Jijiga
+```{r}
+
+#Parameters to manually change for the results table
+group = "Refugees" #group is either host or refugee
+type  = "Main"  #type is either main regression or a particular heterogeneity analysis
+location = "Jijiga" #either all locations or specific locations
+variable = "Interaction" #Either the interaction term, outGroup, or sameOcc
+
+dataset = refugees[which(refugees$region_short==2),]
+#dataset = refugees[which(refugees$urban==0 & refugees$ethiopia==1),]                  
+outcome = dataset$prej_aind_byL       #SPECIFY - the outcome variable
+treatment = dataset$Treatment       #SPECIFY - treatment variable
+
+N = nrow(dataset) 
+
+#Execute the function
+mde_res <- mde_cov(dataset, outcome, cov, treatment, N)   
+
+#Store results in a table
+res = unlist(c(group, type, location, variable, mde_res))
+
+res_matrix <- matrix(res, nrow = 1, byrow = TRUE,
+                     dimnames = list(NULL, c("Group", "Type", "Location", "Variable", "MDS")))
+
+# Bind the matrix as a row to the empty dataframe
+results = rbind(results, as.data.frame(res_matrix))
+
+```
+
+Addis Ababa
+```{r}
+
+#Parameters to manually change for the results table
+group = "Refugees" #group is either host or refugee
+type  = "Main"  #type is either main regression or a particular heterogeneity analysis
+location = "Addis Ababa" #either all locations or specific locations
+variable = "Interaction" #Either the interaction term, outGroup, or sameOcc
+
+dataset = refugees[which(refugees$region_short==1),]
+#dataset = refugees[which(refugees$urban==1 & refugees$ethiopia==1),]                  
+outcome = dataset$prej_aind_byL     #SPECIFY - the outcome variable
+treatment = dataset$Treatment       #SPECIFY - treatment variable
+
+N = nrow(dataset) 
+
+#Execute the function
+mde_res <- mde_cov(dataset, outcome, cov, treatment, N)   
+
+#Store results in a table
+res = unlist(c(group, type, location, variable, mde_res))
+
+res_matrix <- matrix(res, nrow = 1, byrow = TRUE,
+                     dimnames = list(NULL, c("Group", "Type", "Location", "Variable", "MDS")))
+
+# Bind the matrix as a row to the empty dataframe
+results = rbind(results, as.data.frame(res_matrix))
+
+```
+
+Isingiro
+```{r}
+
+#Parameters to manually change for the results table
+group = "Refugees" #group is either host or refugee
+type  = "Main"  #type is either main regression or a particular heterogeneity analysis
+location = "Isingiro" #either all locations or specific locations
+variable = "Interaction" #Either the interaction term, outGroup, or sameOcc
+
+dataset = refugees[which(refugees$region_short==4),]
+#dataset = refugees[which(refugees$urban==0 & refugees$ethiopia==0),]                  
+outcome = dataset$prej_aind_byL           #SPECIFY - the outcome variable
+treatment = dataset$Treatment       #SPECIFY - treatment variable
+
+N = nrow(dataset) 
+
+#Execute the function
+mde_res <- mde_cov(dataset, outcome, cov, treatment, N)   
+
+#Store results in a table
+res = unlist(c(group, type, location, variable, mde_res))
+
+res_matrix <- matrix(res, nrow = 1, byrow = TRUE,
+                     dimnames = list(NULL, c("Group", "Type", "Location", "Variable", "MDS")))
+
+# Bind the matrix as a row to the empty dataframe
+results = rbind(results, as.data.frame(res_matrix))
+
+```
+
+Kampala
+```{r}
+
+#Parameters to manually change for the results table
+group = "Refugees" #group is either host or refugee
+type  = "Main"  #type is either main regression or a particular heterogeneity analysis
+location = "Kampala" #either all locations or specific locations
+variable = "Interaction" #Either the interaction term, outGroup, or sameOcc
+
+dataset = refugees[which(refugees$region_short==3),]
+#dataset = refugees[which(refugees$urban==1 & refugees$ethiopia==0),]                   
+outcome = dataset$prej_aind_byL           #SPECIFY - the outcome variable
+treatment = dataset$Treatment       #SPECIFY - treatment variable
+
+N = nrow(dataset) 
+
+#Execute the function
+mde_res <- mde_cov(dataset, outcome, cov, treatment, N)   
+
+#Store results in a table
+res = unlist(c(group, type, location, variable, mde_res))
+
+res_matrix <- matrix(res, nrow = 1, byrow = TRUE,
+                     dimnames = list(NULL, c("Group", "Type", "Location", "Variable", "MDS")))
+
+# Bind the matrix as a row to the empty dataframe
+results = rbind(results, as.data.frame(res_matrix))
+
+```
+
+## Exporting and Appending results to Excel
+
+```{r}
+write_xlsx(results, file.path(output_folder, "T24_Retrospective_PC.xlsx"))
+
+# Load Excel file to create LaTeX table
+excel_file <- file.path(output_folder, "T24_Retrospective_PC.xlsx")
+data <- read_excel(excel_file)
+
+# Ensure correct column names and remove unnecessary columns
+colnames(data) <- c("Group", "Type", "Location", "Variable", "MDS")
+data <- data %>% select(Group, Location, MDS)
+
+# Modify the Group column to merge rows in LaTeX
+data$Group[duplicated(data$Group)] <- ""
+
+# Generate a raw LaTeX tabular format without repeating "Refugees" in every row
+latex_table <- paste(
+  "\\begin{tabular}{c|c|c}",
+  "Group & Location & Minimum Detectable Size (MDS) \\\\",
+  "\\hline \\hline",
+  paste0(data$Group, " & ", data$Location, " & ", data$MDS, " \\\\", collapse = "\n"),
+  "\\hline",
+  "\\end{tabular}",
+  sep = "\n"
+)
+
+# Save LaTeX table to a .tex file in the output folder
+latex_file <- file.path(output_folder, "TA24_Retrospective_PC.tex")
+write(latex_table, file = latex_file)
+
+file.remove(file.path(output_folder, "T24_Retrospective_PC.xlsx"))
+
+``````
+
+
+
+
+
+
+

@@ -1,0 +1,28 @@
+%%% Table created in Stata by command iebaltab
+%%% (https://github.com/worldbank/ietoolkit)
+%%% (https://dimewiki.worldbank.org/iebaltab)
+%%% The command was specified exactly like this: 
+%%% iebaltab ethiopia urban age male educ_primary hhsize employed [aw=w] if exp_refugee==0, grpvar(treat_var) vce(cluster cluster_psu) savetex("/users/gasten/ownCloud/ETH_UGA Experiment/04. Experimental Approach FAFO/09. Replication Package JDE//02. Output/Tables//TA7_Balance_Tables_Hosts.tex") replace rowvarlabels tblnonote format(%9.2fc) stats("pair(diff)") starlevels(0.1 0.05 0.01)
+
+\begin{tabular}{@{\extracolsep{5pt}}lcccccccccccccccccccc}
+\\[-1.8ex]\hline \hline \\[-1.8ex]
+ & \multicolumn{2}{c}{(1)}  & \multicolumn{2}{c}{(2)}  & \multicolumn{2}{c}{(3)}  & \multicolumn{2}{c}{(4)}  & \multicolumn{2}{c}{(1)-(2)} & \multicolumn{2}{c}{(1)-(3)} & \multicolumn{2}{c}{(1)-(4)} & \multicolumn{2}{c}{(2)-(3)} & \multicolumn{2}{c}{(2)-(4)} & \multicolumn{2}{c}{(3)-(4)} \\
+ & \multicolumn{2}{c}{T1}  & \multicolumn{2}{c}{T2}  & \multicolumn{2}{c}{T3}  & \multicolumn{2}{c}{T4}  & \multicolumn{12}{c}{Pairwise t-test}  \\
+Variable & N/Clusters & Mean/(SE) & N/Clusters & Mean/(SE) & N/Clusters & Mean/(SE) & N/Clusters & Mean/(SE) & N/Clusters & Mean difference & N/Clusters & Mean difference & N/Clusters & Mean difference & N/Clusters & Mean difference & N/Clusters & Mean difference & N/Clusters & Mean difference \\ \hline \\[-1.8ex] 
+Country is Ethiopia   & 718    & 0.46    & 723    & 0.49    & 728    & 0.46    & 700    & 0.47    & 1441    & -0.04    & 1446    & -0.01    & 1418    & -0.01    & 1451    & 0.03    & 1423    & 0.02    & 1428    & -0.01   \\
+ & 298  & (0.03)  & 303  & (0.03)  & 296  & (0.03)  & 294  & (0.03)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+Urban   & 718    & 0.69    & 723    & 0.73    & 728    & 0.73    & 700    & 0.73    & 1441    & -0.05*    & 1446    & -0.05*    & 1418    & -0.04    & 1451    & 0.00    & 1423    & 0.00    & 1428    & 0.00   \\
+ & 298  & (0.03)  & 303  & (0.03)  & 296  & (0.03)  & 294  & (0.03)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+Age   & 718    & 34.27    & 723    & 32.67    & 728    & 33.30    & 700    & 34.29    & 1441    & 1.60**    & 1446    & 0.97    & 1418    & -0.01    & 1451    & -0.63    & 1423    & -1.62***    & 1428    & -0.99   \\
+ & 298  & (0.48)  & 303  & (0.46)  & 296  & (0.52)  & 294  & (0.46)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+Male   & 718    & 0.50    & 723    & 0.46    & 728    & 0.42    & 700    & 0.46    & 1441    & 0.04    & 1446    & 0.09***    & 1418    & 0.05    & 1451    & 0.04    & 1423    & 0.01    & 1428    & -0.04   \\
+ & 298  & (0.02)  & 303  & (0.02)  & 296  & (0.02)  & 294  & (0.02)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+At least primary   & 718    & 0.63    & 723    & 0.66    & 728    & 0.65    & 700    & 0.61    & 1441    & -0.02    & 1446    & -0.02    & 1418    & 0.02    & 1451    & 0.00    & 1423    & 0.05    & 1428    & 0.04   \\
+ & 298  & (0.02)  & 303  & (0.02)  & 296  & (0.02)  & 294  & (0.02)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+Household Size   & 718    & 4.94    & 723    & 4.85    & 728    & 4.71    & 700    & 4.90    & 1441    & 0.10    & 1446    & 0.24    & 1418    & 0.05    & 1451    & 0.14    & 1423    & -0.05    & 1428    & -0.19   \\
+ & 298  & (0.13)  & 303  & (0.12)  & 296  & (0.11)  & 294  & (0.13)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+Employed   & 718    & 0.86    & 723    & 0.85    & 728    & 0.86    & 700    & 0.86    & 1441    & 0.01    & 1446    & 0.01    & 1418    & 0.00    & 1451    & -0.01    & 1423    & -0.01    & 1428    & -0.01   \\
+ & 298  & (0.02)  & 303  & (0.02)  & 296  & (0.02)  & 294  & (0.02)  & 352  &  & 338  &  & 354  &  & 345  &  & 353  &  & 353  &  \\ [1ex]
+\hline \hline \\[-1.8ex]
+
+\end{tabular}
